@@ -8,7 +8,7 @@
 	<script>
 		// SVG setup variables
 		var height = 600;
-		var width = 1000;
+		var width = 1500;
 		var margin = {
 				"top":10,
 				"bottom":10,
@@ -28,7 +28,23 @@ var svg = d3.select("body").append("svg")
 	.attr("height", height)
 	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 	
+var nodeRadius = 20;
+
 var bst = new BinarySearchTree();
+
+bst.insert(50);
+bst.insert(30);
+bst.insert(15);
+bst.insert(20);
+bst.insert(23);
+bst.insert(35);
+bst.insert(60);
+bst.insert(75);
+bst.insert(70);
+bst.insert(80);
+bst.insert(55);
+bst.insert(21);
+bst.insert(24);
 
 /**
  * Draws the tree's nodes in their positions on their level.
@@ -36,16 +52,59 @@ var bst = new BinarySearchTree();
  * tree The tree to draw.
  * svg	The D3 svg object to draw to.
  */
-var draw = function(tree, svg, nodeRadius) {
-	// calculate the node's center x
-	var numPositionsOnLevel = Math.pow(2,this.depth);
-	var maxWidth = Math.pow(2,treeHeight) * (nodeRadius * 2 + 6);
+var drawNode = function(node) {
+	var numPositionsOnLevel = Math.pow(2,node.getDepth());
+	var maxWidth = Math.pow(2,bst.getHeight()) * (nodeRadius * 2 + 6);
+	// draw line to parent (draw this first because it needs to be underneath
+	// this only works with postorder traversal)
 	var firstNodeCx = maxWidth / numPositionsOnLevel / 2;
-	var cx = firstNodeCx + maxWidth / numPositionsOnLevel * this.position;
-	// calculate the node's center y
-	var cy = nodeRadius * 2 * depth + 5 + nodeRadius;
+	var cx = firstNodeCx + maxWidth / numPositionsOnLevel * node.getPosition();
+	var cy = nodeRadius * 2 * node.getDepth() + 10 * node.getDepth() + nodeRadius;
+	var parentCx, parentCy;
+	if (node.parent) {
+		if (node.parent.left == node) {
+			parentCx = cx + firstNodeCx;
+		}
+		else {
+			parentCx = cx - firstNodeCx;
+		}
+		
+		parentCy = cy - nodeRadius * 2 - 10;
+		svg.append("path")
+			.attr("d", "M " + cx + " " + cy + " L " + parentCx + " " + parentCy)
+			.style({"stroke":"black","stroke-width":"2"});
+	}
+	
+	// calculate the node's center x
+	var firstNodeX = maxWidth / numPositionsOnLevel / 2 - nodeRadius;
+	var x = firstNodeX + maxWidth / numPositionsOnLevel * node.getPosition();
+	var y = nodeRadius * 2 * node.getDepth() + 10 * node.getDepth();
+	
+	var group = svg.append("g")
+		.attr("width",nodeRadius * 2)
+		.attr("transform", "translate(" + x + "," + y + ")");
+	group.append("circle")
+		.attr("cx", nodeRadius + 3)
+		.attr("cy", nodeRadius)
+		.attr("r", nodeRadius)
+		.attr("fill", "white")
+		.attr("stroke", "black");
+	group.append("text")
+		.text(node.getKey())
+		.style({"fill":"black", "font-size":"25px"})
+		.attr("x", nodeRadius + 3)
+		.attr("text-anchor", "middle")
+		.attr("y", nodeRadius + 10)
+		.attr("alignment-baseline", "middle");
 	
 };
+
+var logTree = function(node) {
+	console.log(node.getKey());
+}
+
+
+bst.postorderTraversal(drawNode);
 
 </script>
 </body>

@@ -6,6 +6,10 @@ function BinarySearchTree() {
 	this.root;
 	this.height = null;
 	
+	this.getHeight = function() {
+		return this.height;
+	};
+	
 	/*
 	 * Accepts a key as an argument, and either creates a new 
 	 * BinarySearchNode in the root position, or passes the key to the 
@@ -26,6 +30,18 @@ function BinarySearchTree() {
 		}
 	};
 
+	this.inorderTraversal = function(callback) {
+		this.root.inorderTraversal(callback);
+	};
+	
+	this.preorderTraversal = function(callback) {
+		this.root.preorderTraversal(callback);
+	};
+	
+	this.postorderTraversal = function(callback) {
+		this.root.postorderTraversal(callback);
+	};
+
 }
 
 function BinarySearchNode(key, parent, depth, position) {
@@ -35,6 +51,18 @@ function BinarySearchNode(key, parent, depth, position) {
 	this.depth = depth;
 	this.position = position;
 	this.key = key;
+	
+	this.getKey = function() {
+		return this.key;
+	};
+	
+	this.getDepth = function() {
+		return this.depth;
+	};
+	
+	this.getPosition = function() {
+		return this.position;
+	};
 	
 	/**
 	 * Accepts a key as an argument, and passes it on to the appropriate
@@ -62,6 +90,52 @@ function BinarySearchNode(key, parent, depth, position) {
 				return this.depth + 1;
 			}
 		}
+	};
+
+	/**
+	 * Performs an inorder traversal of the tree from this node.
+	 * 
+	 * callback	A function to be called when accessing this node.
+	 */
+	this.inorderTraversal = function(callback) {
+		if (this.left != null)
+			this.left.inorderTraversal(callback);
+		
+		callback(this);
+		
+		if (this.right != null)
+			this.right.inorderTraversal(callback);
+	};
+
+
+	/**
+	 * Performs an preorder traversal of the tree from this node.
+	 * 
+	 * callback	A function to be called when accessing this node.
+	 */
+	this.preorderTraversal = function(callback) {
+		callback(this);
+		
+		if (this.left != null)
+			this.left.preorderTraversal(callback);
+				
+		if (this.right != null)
+			this.right.preorderTraversal(callback);
+	};
+
+	/**
+	 * Performs an postorder traversal of the tree from this node.
+	 * 
+	 * callback	A function to be called when accessing this node.
+	 */
+	this.postorderTraversal = function(callback) {		
+		if (this.left != null)
+			this.left.postorderTraversal(callback);
+				
+		if (this.right != null)
+			this.right.postorderTraversal(callback);
+		
+		callback(this);
 	};
 	
 	
