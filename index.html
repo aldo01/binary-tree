@@ -3,15 +3,15 @@
 <head>
 	<meta charset="utf-8" />
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-	<script src="BinarySearchTree.js"></script>
+	<script src="JSONBinarySearchTree.js"></script>
 	
 	<script>
 		// SVG setup variables
 		var height = 600;
-		var width = 1800;
+		var width = 1000;
 		var margin = {
-				"top":10,
-				"bottom":10,
+				"top":50,
+				"bottom":20,
 				"left":10,
 				"right":10
 		}
@@ -20,18 +20,10 @@
 <body>
 
 <script>
-var svg = d3.select("body").append("svg")
-.attr("height", height + margin.top + margin.bottom)
-.attr("width", width + margin.left + margin.right)
-.append("g")
-	.attr("width", width)
-	.attr("height", height)
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	
-var nodeRadius = 20;
 
-var bst = new BinarySearchTree();
-
+//create a new tree
+var bst = new JSONBinarySearchTree();
+//insert some nodes
 bst.insert(50);
 bst.insert(30);
 bst.insert(15);
@@ -46,65 +38,76 @@ bst.insert(55);
 bst.insert(21);
 bst.insert(24);
 
-/**
- * Draws the tree's nodes in their positions on their level.
- *
- * tree The tree to draw.
- * svg	The D3 svg object to draw to.
- */
-var drawNode = function(node) {
-	var numPositionsOnLevel = Math.pow(2,node.getDepth());
-	var maxWidth = Math.pow(2,bst.getHeight()) * (nodeRadius * 2 + 6);
-	// draw line to parent (draw this first because it needs to be underneath
-	// this only works with postorder traversal)
-	var firstNodeCx = maxWidth / numPositionsOnLevel / 2;
-	var cx = firstNodeCx + maxWidth / numPositionsOnLevel * node.getPosition();
-	var cy = nodeRadius * 2 * node.getDepth() + 10 * node.getDepth() + nodeRadius;
-	var parentCx, parentCy;
-	if (node.parent) {
-		if (node.parent.left == node) {
-			parentCx = cx + firstNodeCx;
-		}
-		else {
-			parentCx = cx - firstNodeCx;
-		}
-		
-		parentCy = cy - nodeRadius * 2 - 10;
-		svg.append("path")
-			.attr("d", "M " + cx + " " + cy + " L " + parentCx + " " + parentCy)
-			.style({"stroke":"black","stroke-width":"2"});
-	}
+// create a svg element and assign a d3 handle to it
+var svg = d3.select("body").append("svg")
+	.attr("height", height + margin.top + margin.bottom)
+	.attr("width", width + margin.left + margin.right)
+	.append("g")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 	
-	// calculate the node's center x
-	var firstNodeX = maxWidth / numPositionsOnLevel / 2 - nodeRadius;
-	var x = firstNodeX + maxWidth / numPositionsOnLevel * node.getPosition();
-	var y = nodeRadius * 2 * node.getDepth() + 10 * node.getDepth();
-	
-	var group = svg.append("g")
-		.attr("width",nodeRadius * 2)
-		.attr("transform", "translate(" + x + "," + y + ")");
-	group.append("circle")
-		.attr("cx", nodeRadius + 3)
-		.attr("cy", nodeRadius)
-		.attr("r", nodeRadius)
-		.attr("fill", "white")
-		.attr("stroke", "black");
-	group.append("text")
-		.text(node.getKey())
-		.style({"fill":"black", "font-size":"25px"})
-		.attr("x", nodeRadius + 3)
-		.attr("text-anchor", "middle")
-		.attr("y", nodeRadius + 10)
-		.attr("alignment-baseline", "middle");
-	
-};
+// how big we want the nodes to be
+var nodeRadius = 20;
 
-var logTree = function(node) {
-	console.log(node.getKey());
+// instantiate a d3 tree layout
+var tree = d3.layout.tree()
+			.sort(null)
+			.size([width,height])
+			// this specifies how the children of each node is accessed
+			.children( function (d) {
+				return (d.left == null && d.right == null) ? null : 
+					[ d.left, d.right];
+			});
+
+// Edges between nodes as a <path class="link" />
+var link = d3.svg.diagonal()
+    .projection(function(d)
+    {
+        return [d.x, d.y];
+    });
+
+
+// function to draw the tree
+function drawTree() {
+	var nodes = tree.nodes(bst.getNodes());
+	var links = tree.links(nodes);
+
+	svg.selectAll(".link")
+		.data(links)
+		.enter()
+		.append("path")
+			.attr("class", "link")
+			.attr("fill", "none")
+			.attr("stroke", "black")
+			.attr("d", link);
+		
+	var nodegroups = svg.selectAll(".node")
+		.data(nodes)
+		.enter()
+		.append("g")
+			.attr("class", "node")
+			.attr("width", nodeRadius * 2)
+			.attr("height", nodeRadius * 2)
+			.attr("transform", function(d) {
+				return "translate(" + d.x + ", " + d.y + ")";
+			});
+			
+	nodegroups.append("circle")
+		.attr("class", "node-circle")
+		.attr("r", nodeRadius);
+	
+	nodegroups.append("text")
+		.attr("fill", "white")
+		.attr("text-anchor", "middle")
+		.attr("dominant-baseline", "central")
+		.text(function (d) {
+			return (d.key === null) ? "null" : d.key;
+		});
 }
 
+drawTree();
 
-bst.postorderTraversal(drawNode);
 
 </script>
 </body>
