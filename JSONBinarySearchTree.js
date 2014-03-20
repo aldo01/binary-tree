@@ -4,7 +4,7 @@ JSONBinarySearchTree = function() {
 	
 	this.insert = function(key, node) {
 		if (node == null)
-			node = this.nodes;
+			node = this.root;
 		
 		// landed on one of the null nodes, so promote the null node
 		// to a full-blown bst node and give it null node children
@@ -21,6 +21,50 @@ JSONBinarySearchTree = function() {
 		}
 	};
 	
+	this.findMin = function (node) {
+		if (node.left == null || this.getKey(node.left) == null) {
+			return node.key;
+		}
+		else {
+			return this.findMin(node.left);
+		}
+	};
+	
+	this.findMax = function (node) {
+		if (node.right == null || this.getKey(node.right) == null) {
+			return node.key;
+		}
+		else {
+			return this.findMax(node.right);
+		}
+	};
+	
+	this.remove = function(key,node) {
+		if (node == null)
+			node = this.root;
+		
+		if (node.key == null)
+			return node;
+		
+		if (key < node.key)
+			node.left = this.remove(key, node.left);
+		else if (key > node.key)
+			node.right = this.remove(key, node.right);
+		else if (node.left.key != null && node.right.key != null) {
+			node.key = this.findMin(node.right);
+			node.right = this.remove(node.key, node.right);
+		}
+		else
+			node = ( node.left.key != null) ? node.left : node.right;
+		
+		return node;
+		
+	};
+	
+	this.getKey = function(node) {
+		return node.key;
+	};
+	
 	this.createNullNode = function() {
 		return {
 				"key" : null,
@@ -30,11 +74,11 @@ JSONBinarySearchTree = function() {
 	};
 	
 	this.getNodes = function () {
-		return this.nodes;
+		return this.root;
 	};
 	
 	// Member Variables //
 	
 	// create an empty tree with one null node
-	this.nodes = this.createNullNode();
+	this.root = this.createNullNode();
 };

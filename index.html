@@ -15,7 +15,21 @@
 				"left":10,
 				"right":10
 		}
+		
+		// how big we want the nodes to be
+		var nodeRadius = 20;
+		// ditto, except using d3.svg.symbol
+		var nodeSize = 1000;
 	</script>
+	<style>
+		text.node-null {
+			font-size:7pt;
+		}
+		
+		text.node-key {
+			font-weight:bold;
+		}
+	</style>
 </head>
 <body>
 
@@ -28,7 +42,7 @@ bst.insert(50);
 bst.insert(30);
 bst.insert(15);
 bst.insert(20);
-bst.insert(23);
+bst.insert(22);
 bst.insert(35);
 bst.insert(60);
 bst.insert(75);
@@ -37,6 +51,13 @@ bst.insert(80);
 bst.insert(55);
 bst.insert(21);
 bst.insert(24);
+bst.insert(23);
+bst.remove(22);
+bst.remove(24);
+bst.remove(15);
+bst.remove(30);
+bst.remove(55);
+bst.remove(75);
 
 // create a svg element and assign a d3 handle to it
 var svg = d3.select("body").append("svg")
@@ -46,9 +67,7 @@ var svg = d3.select("body").append("svg")
 		.attr("width", width)
 		.attr("height", height)
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	
-// how big we want the nodes to be
-var nodeRadius = 20;
+
 
 // instantiate a d3 tree layout
 var tree = d3.layout.tree()
@@ -93,11 +112,36 @@ function drawTree() {
 				return "translate(" + d.x + ", " + d.y + ")";
 			});
 			
-	nodegroups.append("circle")
-		.attr("class", "node-circle")
-		.attr("r", nodeRadius);
+	nodegroups.append("path")
+		.attr("class", function (d) {
+			if (d.key === null)
+				return "node-null";
+			else
+				return "node-key";
+		})
+		.attr("d", d3.svg.symbol()
+			.size(function (d) {
+				if (d.key === null)
+					return nodeSize - 300;
+				else
+					return nodeSize;
+			})
+			.type(function (d) {
+				if (d.key === null) {
+					return "square";
+				}
+				else {
+					return "circle";
+				}
+			}));
 	
 	nodegroups.append("text")
+		.attr("class", function (d) {
+			if (d.key === null)
+				return "node-null";
+			else
+				return "node-key";
+		})
 		.attr("fill", "white")
 		.attr("text-anchor", "middle")
 		.attr("dominant-baseline", "central")
