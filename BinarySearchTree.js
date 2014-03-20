@@ -1,4 +1,4 @@
-JSONBinarySearchTree = function() {
+BinarySearchTree = function() {
 	
 	// Methods //
 	
