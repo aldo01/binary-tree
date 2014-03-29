@@ -7,8 +7,8 @@
 	
 	<script>
 		// SVG setup variables
-		var height = 600;
-		var width = 1000;
+		var height = 700;
+		var width = 1500;
 		var duration = 1500;
 		var margin = {
 				"top":50,
@@ -33,6 +33,7 @@
 	</style>
 </head>
 <body>
+<h2 id="status"></h2>
 
 <script>
 
@@ -65,12 +66,11 @@ var link = d3.svg.diagonal()
     });
 
 
-// function to draw the tree
+/** function to draw the tree */
 function drawTree(searchTree) {
 	var nodes = tree.nodes(searchTree.getNodes());
 	var links = tree.links(nodes);
 		
-	console.log(links);
 	
 	var node = svg.selectAll(".node")
 		.data(nodes, function(d) { return d.id;});
@@ -88,7 +88,7 @@ function drawTree(searchTree) {
 		.attr("d", d3.svg.symbol()
 			.size(function (d) {
 				if (d.key === null)
-					return nodeSize - 300;
+					return nodeSize / 2;
 				else
 					return nodeSize;
 			})
@@ -112,7 +112,7 @@ function drawTree(searchTree) {
 		.attr("text-anchor", "middle")
 		.attr("dominant-baseline", "central")
 		.text(function (d) {
-			return (d.key === null) ? "null" : d.key;
+			return (d.key === null) ? "n" : d.key;
 		});
 	
 	nodeUpdate.transition()
@@ -125,8 +125,8 @@ function drawTree(searchTree) {
 		.append("g")
 			.attr("class", "node")
 			.attr("transform", function (d) {
-				if (d.depth > 0) { // not root node
-					return "translate(" + d.parent.x + "," + d.parent.y + ")";
+				if (d.depth > 0 && d.parent.x0 != null) { // not root node
+					return "translate(" + d.parent.x0 + "," + d.parent.y0 + ")";
 				}
 				else {
 					return "translate(" + width / 2 + ", " + 0 + ")";
@@ -149,7 +149,7 @@ function drawTree(searchTree) {
 		.attr("d", d3.svg.symbol()
 			.size(function (d) {
 				if (d.key === null)
-					return nodeSize - 300;
+					return nodeSize / 2;
 				else
 					return nodeSize;
 			})
@@ -173,7 +173,7 @@ function drawTree(searchTree) {
 		.attr("text-anchor", "middle")
 		.attr("dominant-baseline", "central")
 		.text(function (d) {
-			return (d.key === null) ? "null" : d.key;
+			return (d.key === null) ? "n" : d.key;
 		});
 	var nodeExit = node.exit()
 		.transition()
@@ -194,28 +194,45 @@ function drawTree(searchTree) {
 			.attr("fill", "none")
 			.attr("stroke", "black")
 			.attr("d", function (d) {
-				var o = { x: d.source.x, y: d.source.y};
+				if (d.source.x0 != null)
+					var o = { x: d.source.x0, y: d.source.y0};
+				else
+					var o = { x: d.source.x, y: d.source.y};
 				return link({source:o, target:o});
 			});
 	
 	edges.transition()
 		.duration(duration)
 		.attr("d", link);
+	
+	// store the old position of the node so that transitions happen properly
+	nodes.forEach(function (d) {
+		d.x0 = d.x;
+		d.y0 = d.y;
+	});
 		
 }
 
 //create a new tree
 var bst = new BinarySearchTree();
 
-//insert some nodes
-var keys = [ 50, 30, 15, 20, 22, 35, 60, 75, 70, 80, 55, 21, 24, 23 ];
 var counter = 0;
-var inter = window.setInterval(function () {
-	bst.insert(keys[counter]);
+
+var generator = setInterval(function () {
+	var num = Math.floor(Math.random() * 100)
+	bst.insert(num);
+	d3.select("#status").text("Inserting " + num);
 	drawTree(bst);
 	counter++;
-},2000);
+	if (counter > 100) {
+		clear(generator);
+	}
+}, duration);
 
+function clear(gen) {
+	clearInterval(gen);
+	d3.select("#status").text("Finished Inserting");
+}
 
 </script>
 </body>
