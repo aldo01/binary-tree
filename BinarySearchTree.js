@@ -10,8 +10,6 @@ BinarySearchTree = function() {
 		// to a full-blown bst node and give it null node children
 		if (node.key == null) {
 			node.key = key;
-			node.id = this.nodeCounter;
-			this.nodeCounter++;
 			node.left = this.createNullNode();
 			node.right = this.createNullNode();
 		}
@@ -67,6 +65,7 @@ BinarySearchTree = function() {
 		return node.key;
 	};
 	
+	// all nodes are born as null nodes
 	this.createNullNode = function() {
 		var node =  {
 				"key" : null,

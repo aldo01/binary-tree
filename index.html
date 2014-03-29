@@ -69,34 +69,61 @@ var link = d3.svg.diagonal()
 function drawTree(searchTree) {
 	var nodes = tree.nodes(searchTree.getNodes());
 	var links = tree.links(nodes);
-	
-	var edges = svg.selectAll(".edge")
-		.data(links, function (d) { 
-			return d.target.id; 
-		});
-	
-	edges.enter()
-		.insert("path", "g")
-			.attr("class", "edge")
-			.attr("fill", "none")
-			.attr("stroke", "black")
-			.attr("d", function (d) {
-				var o = { x: d.source.x, y: d.source.y};
-				return link({source:o, target:o});
-			});
-	
-	edges.transition()
-		.duration(duration)
-		.attr("d", link);
 		
+	console.log(links);
+	
 	var node = svg.selectAll(".node")
 		.data(nodes, function(d) { return d.id;});
 	
+	
+	var nodeUpdate = node;
+	
+	nodeUpdate.select("path")
+		.attr("class", function (d) {
+			if (d.key === null)
+				return "node-null";
+			else
+				return "node-key";
+		})
+		.attr("d", d3.svg.symbol()
+			.size(function (d) {
+				if (d.key === null)
+					return nodeSize - 300;
+				else
+					return nodeSize;
+			})
+			.type(function (d) {
+				if (d.key === null) {
+					return "square";
+				}
+				else {
+					return "circle";
+				}
+			}));
+	
+	nodeUpdate.select("text")
+		.attr("class", function (d) {
+			if (d.key === null)
+				return "node-null";
+			else
+				return "node-key";
+		})
+		.attr("fill", "white")
+		.attr("text-anchor", "middle")
+		.attr("dominant-baseline", "central")
+		.text(function (d) {
+			return (d.key === null) ? "null" : d.key;
+		});
+	
+	nodeUpdate.transition()
+		.duration(duration)
+		.attr("transform", function(d) { 
+			return "translate(" + d.x + ", " + d.y + ")";
+		});
+
 	var nodeEnter = node.enter()
 		.append("g")
 			.attr("class", "node")
-			.attr("width", nodeRadius * 2)
-			.attr("height", nodeRadius * 2)
 			.attr("transform", function (d) {
 				if (d.depth > 0) { // not root node
 					return "translate(" + d.parent.x + "," + d.parent.y + ")";
@@ -107,6 +134,7 @@ function drawTree(searchTree) {
 			});
 	
 	nodeEnter.transition()
+			.duration(duration)
 			.attr("transform", function(d) {
 				return "translate(" + d.x + ", " + d.y + ")";
 			});
@@ -147,55 +175,32 @@ function drawTree(searchTree) {
 		.text(function (d) {
 			return (d.key === null) ? "null" : d.key;
 		});
-	
-	var nodeUpdate = node.transition()
-		.duration(duration)
-		.attr("transform", function(d) { 
-			return "translate(" + d.x + ", " + d.y + ")";
-		});
-	
-	nodeUpdate.select("path")
-		.attr("class", function (d) {
-			if (d.key === null)
-				return "node-null";
-			else
-				return "node-key";
-		})
-		.attr("d", d3.svg.symbol()
-			.size(function (d) {
-				if (d.key === null)
-					return nodeSize - 300;
-				else
-					return nodeSize;
-			})
-			.type(function (d) {
-				if (d.key === null) {
-					return "square";
-				}
-				else {
-					return "circle";
-				}
-			}));
-	
-	nodeUpdate.select("text")
-		.attr("class", function (d) {
-			if (d.key === null)
-				return "node-null";
-			else
-				return "node-key";
-		})
-		.attr("fill", "white")
-		.attr("text-anchor", "middle")
-		.attr("dominant-baseline", "central")
-		.text(function (d) {
-			return (d.key === null) ? "null" : d.key;
-		});
-	
 	var nodeExit = node.exit()
 		.transition()
 		.duration(duration)
 		.attr("r", 0)
 		.remove();
+	
+
+	
+	var edges = svg.selectAll(".edge")
+		.data(links, function (d) { 
+			return d.target.id; 
+		});
+	
+	edges.enter()
+		.insert("path", "g")
+			.attr("class", "edge")
+			.attr("fill", "none")
+			.attr("stroke", "black")
+			.attr("d", function (d) {
+				var o = { x: d.source.x, y: d.source.y};
+				return link({source:o, target:o});
+			});
+	
+	edges.transition()
+		.duration(duration)
+		.attr("d", link);
 		
 }
 
