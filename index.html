@@ -9,6 +9,7 @@
 		// SVG setup variables
 		var height = 600;
 		var width = 1000;
+		var duration = 1500;
 		var margin = {
 				"top":50,
 				"bottom":20,
@@ -35,29 +36,6 @@
 
 <script>
 
-//create a new tree
-var bst = new BinarySearchTree();
-//insert some nodes
-bst.insert(50);
-bst.insert(30);
-bst.insert(15);
-bst.insert(20);
-bst.insert(22);
-bst.insert(35);
-bst.insert(60);
-bst.insert(75);
-bst.insert(70);
-bst.insert(80);
-bst.insert(55);
-bst.insert(21);
-bst.insert(24);
-bst.insert(23);
-bst.remove(22);
-bst.remove(24);
-bst.remove(15);
-bst.remove(30);
-bst.remove(55);
-bst.remove(75);
 
 // create a svg element and assign a d3 handle to it
 var svg = d3.select("body").append("svg")
@@ -92,27 +70,48 @@ function drawTree() {
 	var nodes = tree.nodes(bst.getNodes());
 	var links = tree.links(nodes);
 
-	svg.selectAll(".link")
-		.data(links)
-		.enter()
-		.append("path")
-			.attr("class", "link")
+	var edges = svg.selectAll(".edge")
+		.data(links, function (d) { 
+			return d.target; 
+		});
+	
+	edges.enter()
+		.insert("path", "g")
+			.attr("class", "edge")
 			.attr("fill", "none")
 			.attr("stroke", "black")
-			.attr("d", link);
+			.attr("d", function (d) {
+				var o = { x: d.source.x, y: d.source.y};
+				return link({source:o, target:o});
+			});
+	
+	edges.transition()
+		.duration(duration)
+		.attr("d", link);
 		
-	var nodegroups = svg.selectAll(".node")
-		.data(nodes)
-		.enter()
+	var node = svg.selectAll(".node")
+		.data(nodes);
+	
+	var nodeEnter = node.enter()
 		.append("g")
 			.attr("class", "node")
 			.attr("width", nodeRadius * 2)
 			.attr("height", nodeRadius * 2)
+			.attr("transform", function (d) {
+				if (d.depth > 0) { // not root node
+					return "translate(" + d.parent.x + "," + d.parent.y + ")";
+				}
+				else {
+					return "translate(" + width / 2 + ", " + 0 + ")";
+				}
+			});
+	
+	nodeEnter.transition()
 			.attr("transform", function(d) {
 				return "translate(" + d.x + ", " + d.y + ")";
 			});
 			
-	nodegroups.append("path")
+	nodeEnter.append("path")
 		.attr("class", function (d) {
 			if (d.key === null)
 				return "node-null";
@@ -135,7 +134,7 @@ function drawTree() {
 				}
 			}));
 	
-	nodegroups.append("text")
+	nodeEnter.append("text")
 		.attr("class", function (d) {
 			if (d.key === null)
 				return "node-null";
@@ -148,9 +147,87 @@ function drawTree() {
 		.text(function (d) {
 			return (d.key === null) ? "null" : d.key;
 		});
+	
+	var nodeUpdate = node.transition()
+		.duration(duration)
+		.attr("transform", function(d) { 
+			return "translate(" + d.x + ", " + d.y + ")";
+		});
+	
+	nodeUpdate.select("path")
+		.attr("class", function (d) {
+			if (d.key === null)
+				return "node-null";
+			else
+				return "node-key";
+		})
+		.attr("d", d3.svg.symbol()
+			.size(function (d) {
+				if (d.key === null)
+					return nodeSize - 300;
+				else
+					return nodeSize;
+			})
+			.type(function (d) {
+				if (d.key === null) {
+					return "square";
+				}
+				else {
+					return "circle";
+				}
+			}));
+	
+	nodeUpdate.select("text")
+		.attr("class", function (d) {
+			if (d.key === null)
+				return "node-null";
+			else
+				return "node-key";
+		})
+		.attr("fill", "white")
+		.attr("text-anchor", "middle")
+		.attr("dominant-baseline", "central")
+		.text(function (d) {
+			return (d.key === null) ? "null" : d.key;
+		});
+	
+	var nodeExit = node.exit()
+		.transition()
+		.duration(duration)
+		.attr("r", 0)
+		.remove();
+		
 }
 
+//create a new tree
+var bst = new BinarySearchTree();
+//insert some nodes
+bst.insert(50);
 drawTree();
+// bst.insert(30);
+// drawTree();
+// bst.insert(15);
+// bst.insert(20);
+// bst.insert(22);
+// bst.insert(35);
+// bst.insert(60);
+// drawTree();
+// bst.insert(75);
+// bst.insert(70);
+// bst.insert(80);
+// bst.insert(55);
+// bst.insert(21);
+// drawTree();
+// bst.insert(24);
+// bst.insert(23);
+// bst.remove(22);
+// bst.remove(24);
+// bst.remove(15);
+// drawTree();
+// bst.remove(30);
+// bst.remove(55);
+// bst.remove(75);
+// drawTree();
 
 
 </script>
